@@ -173,7 +173,7 @@ body.sn-tx-page .sn-tx-tablewrap .sn-tx-tbl thead th { position: sticky; top: 0;
 /* Header cell tooltip (shows the label text on hover when labels are hidden) */
 .sn-id-tooltip { position: fixed; background: #141A39; color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; line-height: 16px; white-space: nowrap; z-index: 1000; pointer-events: none; opacity: 0; transform: translateY(-2px); transition: opacity 120ms ease, transform 120ms ease; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
 .sn-id-tooltip.is-visible { opacity: 1; transform: translateY(0); }
-.sn-id-tooltip::before { content: ""; position: absolute; bottom: 100%; left: 50%; margin-left: -5px; width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 5px solid #141A39; }
+.sn-id-tooltip::before { content: ""; position: absolute; bottom: 100%; left: var(--sn-tip-arrow-left, 50%); transform: translateX(-50%); width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 5px solid #141A39; }
 .sn-show-labels .sn-id-cells { align-items: start; gap: 14px 24px; }
 .sn-id-cell { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .sn-id-cell .sn-id-value { min-width: 0; }
@@ -231,6 +231,16 @@ body.sn-tx-page .sn-tx-tablewrap .sn-tx-tbl thead th { position: sticky; top: 0;
 .sn-tab-pill { position: relative; padding: 12px 4px; font-size: 14px; color: #606C84; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; margin-right: 24px; flex-shrink: 0; font-family: inherit; background: none; border: none; }
 .sn-tab-pill:last-child { margin-right: 0; }
 .sn-tab-pill.sn-active { color: #2D29D7; font-weight: 500; border-bottom: 2px solid #2D29D7; }
+/* Disabled tab — looks like a normal inactive tab. No click action, no menu — but still draggable for reordering. */
+.sn-tab-pill.sn-tab-disabled { cursor: grab; user-select: none; }
+.sn-tab-pill.sn-tab-disabled:active { cursor: grabbing; }
+.sn-tab-pill.sn-tab-disabled .sn-tab-menu-btn { display: none; }
+/* Drag-and-drop reordering — Asana-style */
+.sn-tab-pill[draggable="true"] { position: relative; cursor: grab; }
+.sn-tab-pill[draggable="true"]:active { cursor: grabbing; }
+.sn-tab-pill.is-dragging { opacity: 0.4; }
+.sn-tab-pill.sn-tab-drop-before::before { content: ''; position: absolute; left: -3px; top: 8px; bottom: 8px; width: 2px; background: #2D29D7; border-radius: 1px; }
+.sn-tab-pill.sn-tab-drop-after::after  { content: ''; position: absolute; right: -3px; top: 8px; bottom: 8px; width: 2px; background: #2D29D7; border-radius: 1px; }
 .sn-tab-pill .sn-tab-name { white-space: nowrap; }
 .sn-tab-menu-btn { opacity: 0; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; border: none; background: none; color: #7e8daa; cursor: pointer; border-radius: 4px; padding: 0; font-family: inherit; transition: opacity 120ms ease; }
 .sn-tab-menu-btn i { font-size: 14px; }
@@ -239,6 +249,10 @@ body.sn-tx-page .sn-tx-tablewrap .sn-tx-tbl thead th { position: sticky; top: 0;
 .sn-tab-add-btn { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; align-self: center; background: none; border: none; color: #7e8daa; cursor: pointer; border-radius: 6px; padding: 0; font-family: inherit; margin-left: 4px; flex-shrink: 0; }
 .sn-tab-add-btn:hover { background: #f2f4f8; color: #2D29D7; }
 .sn-tab-add-btn i { font-size: 16px; }
+/* Reset demo button (right side of tabs bar) — subtle ghost button, for demo only */
+.sn-tab-reset-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; background: none; border: 1px dashed #d8def0; color: #7e8daa; cursor: pointer; border-radius: 6px; font-family: inherit; font-size: 12px; font-weight: 500; align-self: center; margin-right: 0; flex-shrink: 0; }
+.sn-tab-reset-btn:hover { color: #2D29D7; border-color: #2D29D7; background: #f7f7ff; }
+.sn-tab-reset-btn i { font-size: 14px; }
 
 /* Tab rename inline input */
 .sn-tab-rename-input { font: inherit; color: #2D29D7; font-weight: 500; border: 1px solid #2D29D7; background: white; border-radius: 4px; padding: 2px 6px; min-width: 120px; max-width: 240px; outline: none; }
@@ -965,6 +979,8 @@ body.sn-edit-mode .sn-rail-wrap:hover .sn-rail-panel { opacity: 0; pointer-event
             <!-- tabs rendered by snRenderTabs() -->
           </div>
           <button class="sn-tab-add-btn" id="sn-tab-add-btn" aria-label="Add new tab" title="Add new tab"><i class="ti ti-plus"></i></button>
+          <div style="flex: 1;"></div>
+          <button class="sn-tab-reset-btn" id="sn-tab-reset-btn" aria-label="Reset demo" title="Reset all custom tabs and widget visibility to default"><i class="ti ti-rotate-clockwise-2"></i><span>Reset demo</span></button>
         </div>
 
         <div id="sn-widgets-area" style="display: flex; padding: 24px 32px 32px; gap: 16px; background: white; flex: 1; min-height: 0; overflow-y: auto;">
@@ -2538,12 +2554,16 @@ body.sn-edit-mode .sn-rail-wrap:hover .sn-rail-panel { opacity: 0; pointer-event
       var valueText = val ? val.textContent.replace(/\s+/g, ' ').trim() : '';
       tip.textContent = valueText ? labelText + ': ' + valueText : labelText;
       tip.classList.add('is-visible');
-      // Position: centered below the cell, 8px gap
-      var r = cell.getBoundingClientRect();
-      var x = r.left + r.width / 2 - tip.offsetWidth / 2;
+      // Anchor to the cell's leading icon (so the tooltip sits next to the icon, not the chip/value text)
+      var anchor = cell.querySelector('.sn-id-value i') || val || cell;
+      var r = anchor.getBoundingClientRect();
+      var anchorCenter = r.left + r.width / 2;
+      var x = anchorCenter - tip.offsetWidth / 2;
       var y = r.bottom + 8;
-      // Clamp horizontally to viewport
+      // Clamp horizontally to viewport, then move the arrow so it still points at the anchor
       x = Math.max(8, Math.min(window.innerWidth - tip.offsetWidth - 8, x));
+      var arrowLeft = Math.max(10, Math.min(tip.offsetWidth - 10, anchorCenter - x));
+      tip.style.setProperty('--sn-tip-arrow-left', arrowLeft + 'px');
       tip.style.left = x + 'px';
       tip.style.top = y + 'px';
     }
@@ -2848,17 +2868,89 @@ body.sn-edit-mode .sn-rail-wrap:hover .sn-rail-panel { opacity: 0; pointer-event
     var widgetCatalog = WIDGET_CATALOG.filter(function(w){ return document.getElementById(w.id) !== null; });
     var allWidgetIds = widgetCatalog.map(function(w){ return w.id; });
 
-    // Default state — Overview + Transactions + Graph as system tabs
-    // (Transactions is a navigation link to the standalone Transactions page; the rest are in-page)
+    // Page detection — each page hosts a different subset of widgets, so the active tab
+    // and the cross-page navigation hrefs differ. We figure out where we are from the URL.
+    var pathname = (location.pathname || '').toLowerCase();
+    var isTxPage = /transactions/.test(pathname);
+    var isBcPage = /business-checking/.test(pathname);
+
+    // Sibling pages used for navigation. Keep the file names in sync with the build scripts.
+    var OVERVIEW_HREF     = 'jane-doe-profile.html';
+    var TRANSACTIONS_HREF = 'jane-doe-transactions.html';
+    // BC profile has its own Transactions widget already inline, so it doesn't navigate away.
+
+    // Default state — Overview + Transactions + Graph as system tabs. On each page the
+    // currently-displayed tab is in-page; siblings carry an href so clicking navigates.
     var tabState = {
       tabs: [
-        { id: 'overview',     name: 'Overview',          type: 'system', widgets: allWidgetIds.slice() },
-        { id: 'transactions', name: 'Transactions',      type: 'system', href: 'jane-doe-transactions.html', widgets: ['sn-transactions'] },
-        { id: 'graph',        name: 'Connections Graph', type: 'system', widgets: ['sn-relationship-graph', 'sn-relationship-list'].filter(function(id){ return allWidgetIds.indexOf(id) !== -1; }) },
+        {
+          id: 'overview', name: 'Overview', type: 'system',
+          href: isTxPage ? OVERVIEW_HREF : null,
+          widgets: allWidgetIds.slice(),
+        },
+        {
+          id: 'transactions', name: 'Transactions', type: 'system',
+          // Only the Overview page navigates to the standalone Transactions page.
+          // BC and the Transactions page itself keep it as an in-page filter.
+          href: (!isTxPage && !isBcPage) ? TRANSACTIONS_HREF : null,
+          noEdit: true, // Transactions is a fixed single-table view, "Edit widgets" doesn't apply
+          widgets: ['sn-transactions'].filter(function(id){ return allWidgetIds.indexOf(id) !== -1; }),
+        },
+        {
+          id: 'graph', name: 'Connections Graph', type: 'system', disabled: true,
+          widgets: ['sn-relationship-graph', 'sn-relationship-list'].filter(function(id){ return allWidgetIds.indexOf(id) !== -1; }),
+        },
       ],
-      activeId: 'overview',
+      activeId: isTxPage ? 'transactions' : 'overview',
       customCounter: 0,
     };
+
+    // === Cross-page persistence for custom tabs (sessionStorage) ===
+    // Custom tabs live for the current browser tab so navigating between Overview/Transactions/BC
+    // doesn't lose them. They're discarded when the browser tab is closed.
+    var SN_TAB_STORAGE_KEY    = 'sn-custom-tabs-v1';
+    var SN_ACTIVE_STORAGE_KEY = 'sn-active-tab-v1';
+    function snPersistTabs() {
+      try {
+        var customs = tabState.tabs.filter(function(t){ return t.type === 'custom'; }).map(function(t){
+          return { id: t.id, name: t.name, widgets: t.widgets };
+        });
+        sessionStorage.setItem(SN_TAB_STORAGE_KEY, JSON.stringify(customs));
+        sessionStorage.setItem(SN_ACTIVE_STORAGE_KEY, tabState.activeId);
+      } catch (e) {}
+    }
+    function snLoadPersistedTabs() {
+      try {
+        var raw = sessionStorage.getItem(SN_TAB_STORAGE_KEY);
+        if (raw) {
+          var customs = JSON.parse(raw);
+          // Insert custom tabs before the disabled tab (graph). System tabs stay first.
+          // Custom tabs are appended to the end of the bar (after all system tabs, including the disabled Connections Graph)
+          customs.forEach(function(c) {
+            tabState.tabs.push({ id: c.id, name: c.name, type: 'custom', widgets: c.widgets });
+            // Track the largest counter so new IDs don't collide
+            var n = parseInt((c.id.match(/(\d+)$/) || [])[1] || '0', 10);
+            if (n > tabState.customCounter) tabState.customCounter = n;
+          });
+        }
+        // Only restore active tab if it exists AND has at least one widget present on this page
+        var storedActive = sessionStorage.getItem(SN_ACTIVE_STORAGE_KEY);
+        if (storedActive) {
+          var t = null;
+          for (var j=0; j<tabState.tabs.length; j++) if (tabState.tabs[j].id === storedActive) { t = tabState.tabs[j]; break; }
+          if (t) {
+            if (t.type === 'custom') {
+              var anyWidgetHere = t.widgets.some(function(id){ return document.getElementById(id) !== null; });
+              if (anyWidgetHere) tabState.activeId = storedActive;
+            } else if (t.type === 'system' && !t.disabled && (t.id === 'overview' || (isTxPage && t.id === 'transactions'))) {
+              // Only honor cross-page active state for matching system tabs (Overview/Transactions)
+              tabState.activeId = storedActive;
+            }
+          }
+        }
+      } catch (e) {}
+    }
+    snLoadPersistedTabs();
 
     var tabsListEl       = document.getElementById('sn-tabs-list');
     var addBtn           = document.getElementById('sn-tab-add-btn');
@@ -2892,6 +2984,24 @@ body.sn-edit-mode .sn-rail-wrap:hover .sn-rail-panel { opacity: 0; pointer-event
     function snRenderTabs() {
       tabsListEl.innerHTML = '';
       tabState.tabs.forEach(function(tab) {
+        // Disabled tabs render as plain spans (no anchor, no button) — still draggable + drop target.
+        // Click is suppressed so they have no nav/menu affordance.
+        if (tab.disabled) {
+          var disabled = document.createElement('span');
+          disabled.className = 'sn-tab-pill sn-tab-disabled';
+          disabled.dataset.tabId = tab.id;
+          disabled.draggable = true;
+          var nameSpan = document.createElement('span');
+          nameSpan.className = 'sn-tab-name';
+          nameSpan.textContent = tab.name;
+          disabled.appendChild(nameSpan);
+          disabled.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); });
+          snWireDragSource(disabled, tab.id);
+          snWireDropTarget(disabled, tab.id);
+          tabsListEl.appendChild(disabled);
+          return;
+        }
+
         var pill = document.createElement(tab.href ? 'a' : 'button');
         pill.className = 'sn-tab-pill' + (tab.id === tabState.activeId ? ' sn-active' : '');
         pill.dataset.tabId = tab.id;
@@ -2910,6 +3020,8 @@ body.sn-edit-mode .sn-rail-wrap:hover .sn-rail-panel { opacity: 0; pointer-event
           e.preventDefault(); e.stopPropagation();
           snOpenActionMenu(tab.id, menuBtn);
         });
+        // Don't let the menu button start a drag — block dragstart at the source
+        menuBtn.addEventListener('mousedown', function(e){ e.stopPropagation(); });
         pill.appendChild(menuBtn);
 
         // Pill click: switch active tab (for non-href tabs)
@@ -2919,13 +3031,73 @@ body.sn-edit-mode .sn-rail-wrap:hover .sn-rail-panel { opacity: 0; pointer-event
           e.preventDefault();
           snSetActiveTab(tab.id);
         });
+
+        // Drag source + drop target
+        pill.draggable = true;
+        snWireDragSource(pill, tab.id);
+        snWireDropTarget(pill, tab.id);
+
         tabsListEl.appendChild(pill);
       });
       if (window.snReplaceIcons) window.snReplaceIcons();
     }
 
+    // === DRAG-AND-DROP (Asana-style tab reordering) ===
+    function snClearDropIndicators() {
+      tabsListEl.querySelectorAll('.sn-tab-drop-before, .sn-tab-drop-after').forEach(function(el){
+        el.classList.remove('sn-tab-drop-before', 'sn-tab-drop-after');
+      });
+    }
+    function snWireDragSource(pill, tabId) {
+      pill.addEventListener('dragstart', function(e) {
+        try {
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', tabId);
+        } catch (err) {}
+        pill.classList.add('is-dragging');
+      });
+      pill.addEventListener('dragend', function() {
+        pill.classList.remove('is-dragging');
+        snClearDropIndicators();
+      });
+    }
+    function snWireDropTarget(pill, tabId) {
+      pill.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+        var rect = pill.getBoundingClientRect();
+        var before = e.clientX < (rect.left + rect.width / 2);
+        snClearDropIndicators();
+        pill.classList.add(before ? 'sn-tab-drop-before' : 'sn-tab-drop-after');
+      });
+      pill.addEventListener('dragleave', function(e) {
+        // Only clear if leaving the pill entirely (not moving into a child)
+        if (!e.relatedTarget || !pill.contains(e.relatedTarget)) {
+          pill.classList.remove('sn-tab-drop-before', 'sn-tab-drop-after');
+        }
+      });
+      pill.addEventListener('drop', function(e) {
+        e.preventDefault();
+        var srcId = '';
+        try { srcId = e.dataTransfer.getData('text/plain'); } catch (err) {}
+        snClearDropIndicators();
+        if (!srcId || srcId === tabId) return;
+        var srcIdx = snFindTabIndex(srcId);
+        if (srcIdx < 0) return;
+        var rect = pill.getBoundingClientRect();
+        var before = e.clientX < (rect.left + rect.width / 2);
+        var moved = tabState.tabs.splice(srcIdx, 1)[0];
+        var dstIdx = snFindTabIndex(tabId);
+        if (dstIdx < 0) { tabState.tabs.push(moved); }
+        else tabState.tabs.splice(before ? dstIdx : dstIdx + 1, 0, moved);
+        snPersistTabs();
+        snRenderTabs();
+      });
+    }
+
     function snSetActiveTab(tabId) {
       tabState.activeId = tabId;
+      snPersistTabs();
       snApplyWidgetFilter();
       snRenderTabs();
     }
@@ -2974,7 +3146,11 @@ body.sn-edit-mode .sn-rail-wrap:hover .sn-rail-panel { opacity: 0; pointer-event
 
     function snRenderTabdWidgets(selectedIds) {
       tabdWidgetsEl.innerHTML = '';
-      widgetCatalog.forEach(function(w) {
+      // Drawer always shows the FULL catalog regardless of which widgets are present on the current
+      // page — the user is configuring a new tab and may want to pick widgets that exist on other
+      // pages too. Filtering at runtime is handled separately in snApplyWidgetFilter.
+      // Exclude Transactions: it has its own dedicated system tab and doesn't belong inside custom tabs.
+      WIDGET_CATALOG.filter(function(w){ return w.id !== 'sn-transactions'; }).forEach(function(w) {
         var row = document.createElement('label');
         row.className = 'sn-tabd-widget-row';
         var checked = selectedIds && selectedIds.indexOf(w.id) !== -1 ? ' checked' : '';
@@ -3072,14 +3248,30 @@ body.sn-edit-mode .sn-rail-wrap:hover .sn-rail-panel { opacity: 0; pointer-event
         tabState.customCounter += 1;
         var newId = 'custom-' + Date.now() + '-' + tabState.customCounter;
         var newTab = { id: newId, name: name, type: 'custom', widgets: selected };
-        // Insert before the "+" button (i.e., at end of tabs list)
+        // Append to the end of the bar (after all system tabs, just before the "+" button)
         tabState.tabs.push(newTab);
+        // Persist so the tab survives navigation (e.g. when none of its widgets exist here)
+        tabState.activeId = newId;
+        snPersistTabs();
+        // If the selected widgets don't exist on this page, navigate to Overview where most live
+        var anyOnThisPage = selected.length === 0 || selected.some(function(id){ return document.getElementById(id) !== null; });
+        if (!anyOnThisPage) {
+          location.href = OVERVIEW_HREF;
+          return;
+        }
         snCloseDrawer();
-        snSetActiveTab(newId);
+        snApplyWidgetFilter();
+        snRenderTabs();
       } else if (drawerMode.mode === 'edit') {
         var tab = snFindTab(drawerMode.editingTabId);
         if (tab) { tab.name = name; tab.widgets = selected; }
+        snPersistTabs();
         snCloseDrawer();
+        // If editing the active tab and the new widget selection has nothing on this page, hop to Overview
+        if (tab && tabState.activeId === tab.id && tab.type === 'custom') {
+          var anyHere = tab.widgets.length === 0 || tab.widgets.some(function(id){ return document.getElementById(id) !== null; });
+          if (!anyHere) { location.href = OVERVIEW_HREF; return; }
+        }
         snRenderTabs();
         if (tab && tabState.activeId === tab.id) snApplyWidgetFilter();
       }
@@ -3099,6 +3291,9 @@ body.sn-edit-mode .sn-rail-wrap:hover .sn-rail-panel { opacity: 0; pointer-event
         actionDeleteEl.style.display = '';
         actionDividerEl.style.display = '';
       }
+      // Tabs flagged noEdit (e.g. Transactions, which is a single fixed table) hide "Edit widgets"
+      var actionEditEl = actionMenu.querySelector('[data-action="edit"]');
+      if (actionEditEl) actionEditEl.style.display = tab.noEdit ? 'none' : '';
       // Position the menu below the anchor button
       var rect = anchorEl.getBoundingClientRect();
       actionMenu.style.left = (rect.left) + 'px';
@@ -3153,6 +3348,7 @@ body.sn-edit-mode .sn-rail-wrap:hover .sn-rail-panel { opacity: 0; pointer-event
         if (!newName) newName = current;
         var tab = snFindTab(tabId);
         if (tab) tab.name = newName;
+        snPersistTabs();
         snRenderTabs();
       };
       input.addEventListener('keydown', function(e) {
@@ -3173,6 +3369,7 @@ body.sn-edit-mode .sn-rail-wrap:hover .sn-rail-panel { opacity: 0; pointer-event
       // Insert right after source
       var idx = snFindTabIndex(tabId);
       tabState.tabs.splice(idx + 1, 0, copy);
+      snPersistTabs();
       snSetActiveTab(newId);
     }
 
@@ -3187,12 +3384,23 @@ body.sn-edit-mode .sn-rail-wrap:hover .sn-rail-panel { opacity: 0; pointer-event
         var next = tabState.tabs[idx] || tabState.tabs[idx - 1] || tabState.tabs[0];
         if (next) tabState.activeId = next.id;
       }
+      snPersistTabs();
       snRenderTabs();
       snApplyWidgetFilter();
     }
 
     // === WIRE UP ===
     addBtn.addEventListener('click', snOpenDrawerCreate);
+
+    // Reset demo button — wipes all custom tabs + active state from sessionStorage, then reloads
+    var resetBtn = document.getElementById('sn-tab-reset-btn');
+    if (resetBtn) resetBtn.addEventListener('click', function() {
+      try {
+        sessionStorage.removeItem(SN_TAB_STORAGE_KEY);
+        sessionStorage.removeItem(SN_ACTIVE_STORAGE_KEY);
+      } catch (e) {}
+      location.reload();
+    });
     emptyStateCta.addEventListener('click', function(){
       // Open edit drawer for current active tab so the user can add widgets to it
       snOpenDrawerEdit(tabState.activeId);
