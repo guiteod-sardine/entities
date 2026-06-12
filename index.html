@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sardine Entities — Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; color: #0B0C0E; background: #F8FAFD; }
+    .wrap { max-width: 880px; margin: 0 auto; padding: 56px 24px 80px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; background: #ebebff; color: #2D29D7; font-size: 12px; font-weight: 600; border-radius: 999px; margin-bottom: 16px; }
+    h1 { font-size: 32px; font-weight: 700; line-height: 1.2; margin: 0 0 12px; letter-spacing: -0.4px; }
+    .lead { font-size: 16px; line-height: 1.55; color: #606C84; margin: 0 0 32px; max-width: 640px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 40px; }
+    .card { display: flex; flex-direction: column; gap: 6px; padding: 20px 22px; background: white; border: 1px solid #e1e6ef; border-radius: 12px; text-decoration: none; color: inherit; transition: border-color 140ms, transform 140ms, box-shadow 140ms; }
+    .card:hover { border-color: #2D29D7; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(45, 41, 215, 0.08); }
+    .card .ctype { font-size: 11px; font-weight: 600; color: #7e8daa; letter-spacing: 0.4px; text-transform: uppercase; }
+    .card .ctitle { font-size: 18px; font-weight: 600; color: #0B0C0E; }
+    .card .cdesc { font-size: 13px; color: #606C84; line-height: 1.5; margin-top: 4px; }
+    .card .clink { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: #2D29D7; font-weight: 500; margin-top: 12px; }
+    .section-title { font-size: 13px; font-weight: 600; color: #7e8daa; letter-spacing: 0.4px; text-transform: uppercase; margin: 32px 0 12px; }
+    .features { display: flex; flex-direction: column; gap: 10px; padding: 0; margin: 0 0 32px; list-style: none; }
+    .features li { padding-left: 28px; position: relative; font-size: 14px; color: #2e3238; line-height: 1.55; }
+    .features li::before { content: ''; position: absolute; left: 8px; top: 8px; width: 6px; height: 6px; border-radius: 50%; background: #2D29D7; }
+    .features li strong { color: #0B0C0E; font-weight: 600; }
+    .footer { font-size: 12px; color: #7e8daa; margin-top: 48px; border-top: 1px solid #e1e6ef; padding-top: 20px; }
+    .footer a { color: #2D29D7; text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="eyebrow">Internal prototype · Sardine Risk</div>
+    <h1>Entities — fraud analyst profile</h1>
+    <p class="lead">Pixel-level prototype of the next Entity Profile experience in Sardine. Three navigable views, designed to validate widget composition, tab customisation and the new section rail with a real analyst workflow.</p>
+
+    <div class="grid">
+      <a class="card" href="jane-doe-profile.html">
+        <span class="ctype">Individual entity · Overview</span>
+        <span class="ctitle">Jane Doe</span>
+        <span class="cdesc">Full overview with all widgets visible — investigation queues, risk signals, accounts, analytics, events history, PII, location, relationship graph.</span>
+        <span class="clink">Open profile →</span>
+      </a>
+      <a class="card" href="jane-doe-transactions.html">
+        <span class="ctype">Individual entity · Transactions</span>
+        <span class="ctitle">Jane Doe · Transactions</span>
+        <span class="cdesc">Standalone transactions tab with filtering, sticky footer pagination and search across her 3 accounts.</span>
+        <span class="clink">Open transactions →</span>
+      </a>
+      <a class="card" href="business-checking-profile.html">
+        <span class="ctype">Account entity</span>
+        <span class="ctitle">Business Checking ••••4471</span>
+        <span class="cdesc">Account-level profile (Northbridge Trading Ltd) with the new Account Holders &amp; Parties widget — cross-account chips, adverse media, sanctions screening, audit history.</span>
+        <span class="clink">Open account →</span>
+      </a>
+    </div>
+
+    <div class="section-title">Key concepts under test</div>
+    <ul class="features">
+      <li><strong>Customisable tabs</strong> — click the <code>+</code> next to the system tabs to open a drawer that lets you pick widgets, name the tab and define permissions. Custom tabs support rename / edit / duplicate / delete via hover menu.</li>
+      <li><strong>Section rail</strong> — small dots on the left track the widget currently in view. Hover opens a panel listing every widget; pin to keep it floating, or hit the gear to open the Edit page drawer.</li>
+      <li><strong>Header customisation</strong> — the "Customize header" gear opens a drawer to reorder and pin data points. The header collapses on scroll while keeping the namerow and pinned cells visible.</li>
+      <li><strong>Account Holders &amp; Parties</strong> — Beneficial Owners + Authorized Signatories with cross-account presence chips, adverse media counts, transitive sanctions scoring and an audit history timeline.</li>
+      <li><strong>Coherent risk story</strong> — Risk Level, KYC status, sanctions and date stamps were reconciled across widgets so a fraud analyst can read the profile end-to-end without contradictions.</li>
+    </ul>
+
+    <div class="section-title">Source</div>
+    <p class="lead" style="font-size: 14px; margin-bottom: 0;">All three HTMLs are derived from the single source file <a href="src/v25.html" style="color:#2D29D7;">src/v25.html</a> via the Python build scripts in <a href="src/" style="color:#2D29D7;">src/</a>. The icon system is the Tabler outline set, bundled inline in <a href="src/tabler-svg-bundle.js" style="color:#2D29D7;">src/tabler-svg-bundle.js</a>.</p>
+
+    <div class="footer">
+      Sardine Risk · Internal prototype · Built with Claude in Cowork mode.
+    </div>
+  </div>
+</body>
+</html>
